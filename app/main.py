@@ -9,8 +9,6 @@ app = FastAPI()
 
 app.include_router(receipts.router)
 
-# todo: add tests
-
 
 @app.exception_handler(RequestValidationError)
 async def custom_error_handler(request, exc):
