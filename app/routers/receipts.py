@@ -21,7 +21,7 @@ receipt_points: Dict[UUID, int] = {}
 class Receipt(BaseModel):
     retailer: str = Field(pattern=r"^[\w\s\-&]+$", examples=["Targee"])
     purchaseDate: date
-    purchaseTime: time
+    purchaseTime: time = Field(examples=["14:01"])
     items: list[Item] = Field(min_length=1)
     total: str = Field(pattern=r"^\d+\.\d{2}$", examples=["45.67"])
 

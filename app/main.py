@@ -16,8 +16,3 @@ async def custom_error_handler(request, exc):
         return JSONResponse({"description": "The receipt is invalid"}, status_code=400)
 
     return await request_validation_exception_handler(request, exc)
-
-
-@app.get("/")
-def root():
-    return {"message": "Hello! you are at the root"}
