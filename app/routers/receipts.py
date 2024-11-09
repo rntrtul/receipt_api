@@ -3,7 +3,7 @@ from functools import reduce
 from typing import Dict, Callable, Final
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response, status
 from pydantic import BaseModel, Field
 
 from .items import Item, price_str_to_cents
@@ -49,7 +49,7 @@ class Receipt(BaseModel):
         return points
 
 
-@router.post("/process")
+@router.post("/process", status_code=status.HTTP_200_OK)
 def process_receipt(receipt: Receipt):
     uid = uuid4()
     receipt_points[uid] = receipt.calculate_points()
@@ -57,18 +57,20 @@ def process_receipt(receipt: Receipt):
     return {"id": uid}
 
 
-@router.get("/{receipt_id}/points")
-def get_receipt_points(receipt_id: str):
-    no_receipt_error = {404: {"description": "No receipt found for that id"}}
+@router.get("/{receipt_id}/points", status_code=status.HTTP_200_OK)
+def get_receipt_points(receipt_id: str, response: Response):
+    no_receipt_error = {"description": "No receipt found for that id"}
 
     try:
         uid: UUID = UUID(receipt_id)
     except ValueError:
+        response.status_code = status.HTTP_404_NOT_FOUND
         return no_receipt_error
 
     if uid in receipt_points:
         return {"points": receipt_points[uid]}
 
+    response.status_code = status.HTTP_404_NOT_FOUND
     return no_receipt_error
 
 
