@@ -3,8 +3,8 @@ from functools import reduce
 from typing import Dict, Callable, Final
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Response, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Response, status, Request
+from pydantic import BaseModel, Field, ValidationError
 
 from .items import Item, price_str_to_cents
 
@@ -50,7 +50,15 @@ class Receipt(BaseModel):
 
 
 @router.post("/process", status_code=status.HTTP_200_OK)
-def process_receipt(receipt: Receipt):
+async def process_receipt(request: Request, response: Response):
+    receipt_json = await request.body()
+    receipt: Receipt
+    try:
+        receipt = Receipt.model_validate_json(receipt_json)
+    except ValidationError:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"description": "The receipt is invalid"}
+
     uid = uuid4()
     receipt_points[uid] = receipt.calculate_points()
 
